@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="cs" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FotoobrazyPRO — Vzpomínky, které zůstanou | Fotoateliér Tišnov</title>
+<meta name="description" content="FotoobrazyPRO — Stefan Paralič, Tišnov. Tisk fotografií na plátno i na papír, digitální retuš. Pigmentový tisk s trvanlivostí 70–100 let. Zavolejte: +420 776 654 099." />
+<meta name="theme-color" content="#F7F1EA" />
+<link rel="icon" href="images/logo.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          serif: ['Fraunces', 'Georgia', 'serif'],
+          sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          paper:  '#F7F1EA',
+          panel:  '#FBF6EF',
+          ink:    '#171311',
+          stone:  '#5A4F47',
+          accent: '#DD183B',
+          deep:   '#C0152F',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { color-scheme: light; }
+  html { font-size: 18px; }
+  @media (max-width: 640px){ html { font-size: 17px; } }
+  body { font-feature-settings: "ss01","cv11"; -webkit-font-smoothing: antialiased; }
+
+  ::selection { background: #DD183B; color: #fff; }
+
+  /* Visible, large focus ring — accessibility for older visitors */
+  a:focus-visible, button:focus-visible, input:focus-visible,
+  textarea:focus-visible, select:focus-visible {
+    outline: 3px solid #DD183B;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Fixed film-grain — physical paper feel, never on scroll containers */
+  .grain::after {
+    content: "";
+    position: fixed; inset: 0; z-index: 60; pointer-events: none;
+    opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Museum mat / passe-partout frame */
+  .frame {
+    background: #FBF6EF;
+    padding: clamp(14px, 2.4vw, 30px);
+    box-shadow: 0 1px 0 rgba(255,255,255,.7) inset,
+                0 30px 60px -28px rgba(23,19,17,.45);
+  }
+  .frame__inner {
+    position: relative;
+    box-shadow: 0 0 0 1px rgba(23,19,17,.10),
+                0 0 0 6px #FBF6EF,
+                0 0 0 7px rgba(221,24,59,.55);
+    overflow: hidden;
+  }
+  .frame__inner img { display:block; width:100%; height:100%; object-fit:cover; }
+
+  /* Concentric "double-bezel" card */
+  .bezel { background:#F1E8DC; border:1px solid rgba(23,19,17,.08); }
+  .bezel__core {
+    background:#FBF6EF;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.7),
+                0 18px 40px -30px rgba(23,19,17,.4);
+  }
+
+  /* Scroll reveal */
+  .reveal { opacity:0; transform: translateY(28px); filter: blur(6px);
+            transition: opacity .9s cubic-bezier(.32,.72,0,1),
+                        transform .9s cubic-bezier(.32,.72,0,1),
+                        filter .9s cubic-bezier(.32,.72,0,1); }
+  .reveal.in { opacity:1; transform:none; filter:none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity:1 !important; transform:none !important; filter:none !important;
+              transition:none !important; }
+    * { animation:none !important; }
+  }
+
+  .u-link { background-image: linear-gradient(currentColor,currentColor);
+            background-size: 0% 2px; background-repeat:no-repeat;
+            background-position: 0 100%;
+            transition: background-size .45s cubic-bezier(.32,.72,0,1); }
+  .u-link:hover { background-size: 100% 2px; }
+
+  details > summary { list-style:none; cursor:pointer; }
+  details > summary::-webkit-details-marker { display:none; }
+</style>
+</head>
+
+<body class="grain bg-paper text-ink font-sans antialiased"
+      x-data="site()" x-cloak
+      :class="{ 'overflow-hidden': mobileOpen || modal || lightbox.open }">
+
+<!-- skip link -->
+<a href="#hero" class="sr-only focus:not-sr-only focus:absolute focus:z-[80] focus:left-4 focus:top-4 focus:bg-ink focus:text-paper focus:px-5 focus:py-3 focus:rounded-full">Přeskočit na obsah</a>
+
+<!-- ============ HEADER ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500"
+        :class="scrolled ? 'bg-paper/85 backdrop-blur-md shadow-[0_1px_0_rgba(23,19,17,.08)]' : 'bg-transparent'">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
+    <a href="#hero" class="flex items-center shrink-0" aria-label="FotoobrazyPRO — domů">
+      <img src="images/logo.png" alt="FotoobrazyPRO" class="h-9 sm:h-11 w-auto" />
+    </a>
+
+    <nav class="hidden lg:flex items-center gap-9 text-[1.02rem] font-medium">
+      <a href="#o-nas"   class="u-link py-1">O ateliéru</a>
+      <a href="#sluzby"  class="u-link py-1">Co nabízíme</a>
+      <a href="#cenik"   class="u-link py-1">Velikost &amp; ceník</a>
+      <a href="#galerie" class="u-link py-1">Galerie</a>
+      <a href="#kontakt" class="u-link py-1">Kontakt</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a href="tel:+420776654099"
+         class="group hidden sm:inline-flex items-center gap-3 rounded-full bg-accent pl-6 pr-2 py-2.5 text-paper font-semibold tracking-wide
+                transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.97] hover:bg-deep">
+        <span>Zavolat&nbsp;776&nbsp;654&nbsp;099</span>
+        <span class="grid place-items-center w-9 h-9 rounded-full bg-white/15
+                     transition-transform duration-300 group-hover:translate-x-[2px] group-hover:-translate-y-[1px]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+        </span>
+      </a>
+
+      <button @click="mobileOpen = true" class="lg:hidden grid place-items-center w-12 h-12 rounded-full bg-ink text-paper" aria-label="Otevřít menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MOBILE MENU ============ -->
+<div x-show="mobileOpen" x-transition.opacity.duration.300ms
+     class="fixed inset-0 z-[70] bg-ink/95 backdrop-blur-xl text-paper" style="display:none">
+  <div class="mx-auto max-w-7xl px-6 h-20 sm:h-24 flex items-center justify-between">
+    <span class="font-serif text-2xl">FotoobrazyPRO</span>
+    <button @click="mobileOpen = false" class="grid place-items-center w-12 h-12 rounded-full bg-white/10" aria-label="Zavřít menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <nav class="px-7 mt-6 flex flex-col gap-2 text-[2rem] font-serif">
+    <template x-for="(it,i) in [['#o-nas','O ateliéru'],['#sluzby','Co nabízíme'],['#cenik','Velikost & ceník'],['#galerie','Galerie'],['#kontakt','Kontakt']]" :key="i">
+      <a :href="it[0]" @click="mobileOpen=false"
+         class="py-3 border-b border-white/10 transition-colors duration-300 hover:text-accent" x-text="it[1]"></a>
+    </template>
+  </nav>
+  <a href="tel:+420776654099" @click="mobileOpen=false"
+     class="mx-7 mt-9 flex items-center justify-center gap-3 rounded-full bg-accent py-5 text-paper text-xl font-semibold">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+    Zavolat 776 654 099
+  </a>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="relative pt-32 sm:pt-40 pb-20 sm:pb-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+
+    <div class="lg:col-span-6 reveal">
+      <span class="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-panel px-4 py-1.5 text-[.82rem] font-semibold uppercase tracking-[.18em] text-stone">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span> Fotoateliér · Tišnov
+      </span>
+
+      <h1 class="mt-7 font-serif font-semibold leading-[1.02] tracking-[-.02em]
+                 text-[3.1rem] sm:text-[4.3rem] lg:text-[4.8rem]">
+        Vzpomínky,<br /><span class="italic text-accent">které zůstanou.</span>
+      </h1>
+
+      <p class="mt-7 text-[1.22rem] sm:text-[1.32rem] leading-relaxed text-stone max-w-xl">
+        Elegantní způsob, jak uchovat své vzpomínky. Vaši nejmilejší fotografii
+        vytiskneme na plátno pigmentovým inkoustem s&nbsp;trvanlivostí
+        <strong class="text-ink font-semibold">70–100&nbsp;let</strong>.
+      </p>
+
+      <div class="mt-10 flex flex-col sm:flex-row gap-4">
+        <a href="#cenik"
+           class="group inline-flex items-center justify-center gap-3 rounded-full bg-ink pl-8 pr-3 py-4 text-paper text-[1.08rem] font-semibold
+                  transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.98] hover:bg-black">
+          Spočítat velikost
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-white/12
+                       transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-[1px]">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+        <a href="tel:+420776654099"
+           class="inline-flex items-center justify-center gap-3 rounded-full border-2 border-ink/20 px-8 py-4 text-[1.08rem] font-semibold
+                  transition-colors duration-300 hover:border-accent hover:text-accent">
+          Zavolat zdarma o radu
+        </a>
+      </div>
+
+      <div class="mt-11 flex flex-wrap gap-x-9 gap-y-3 text-[.98rem] text-stone">
+        <span class="flex items-center gap-2"><span class="text-accent">●</span> Plátno i fotopapír</span>
+        <span class="flex items-center gap-2"><span class="text-accent">●</span> Digitální retuš</span>
+        <span class="flex items-center gap-2"><span class="text-accent">●</span> Osobní přístup</span>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 reveal">
+      <figure class="frame rounded-[1.4rem] max-w-xl ml-auto rotate-[1.1deg]">
+        <div class="frame__inner rounded-[3px] aspect-[4/3]">
+          <img src="images/krajina-hory.jpg" alt="Ukázka fotoobrazu na plátně — horská krajina" />
+        </div>
+        <figcaption class="pt-4 text-center font-serif italic text-[1.05rem] text-stone">
+          „Váš snímek na plátně“ — ukázka
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ O ATELIÉRU ============ -->
+<section id="o-nas" class="py-20 sm:py-28 bg-panel/60 border-y border-ink/10">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-12 gap-14 items-center">
+
+    <div class="lg:col-span-5 order-2 lg:order-1 reveal">
+      <figure class="frame rounded-[1.4rem] max-w-md -rotate-[1.4deg]">
+        <div class="frame__inner rounded-[3px] aspect-[4/5]">
+          <img src="images/portret-cb.jpg" alt="Černobílý portrét — ukázka práce ateliéru" />
+        </div>
+      </figure>
+    </div>
+
+    <div class="lg:col-span-7 order-1 lg:order-2 reveal">
+      <span class="text-[.82rem] font-semibold uppercase tracking-[.2em] text-accent">O ateliéru</span>
+      <h2 class="mt-4 font-serif font-semibold leading-[1.08] tracking-[-.02em] text-[2.5rem] sm:text-[3.3rem]">
+        Řemeslo, které máme v rodině.
+      </h2>
+
+      <blockquote class="mt-8 border-l-[3px] border-accent pl-6 font-serif italic text-[1.5rem] sm:text-[1.7rem] leading-snug">
+        „Portrét není jen fotka, je&nbsp;to&nbsp;zachycení osobnosti.“
+      </blockquote>
+
+      <div class="mt-7 space-y-5 text-[1.14rem] leading-relaxed text-stone max-w-2xl">
+        <p>
+          Pocházíme z&nbsp;rodiny fotografů a&nbsp;umělců. Otec byl fotograf
+          a&nbsp;malíř — jeho olejomalby dodnes zdobí chrámy a&nbsp;kaple na
+          východním Slovensku. Už jako dítě jsem fotil a&nbsp;vyvolával snímky
+          v&nbsp;jeho temné komoře.
+        </p>
+        <p>
+          Profesionální fotografii — se správným světlem, kompozicí
+          a&nbsp;atmosférou — nenahradí rychlý snímek z&nbsp;mobilu. Proto se
+          o&nbsp;každou fotografii staráme osobně, od&nbsp;úpravy až
+          po&nbsp;hotový obraz, který vám vydrží generace.
+        </p>
+      </div>
+
+      <p class="mt-8 text-[1.05rem]">
+        <span class="font-semibold">Stefan Paralič</span>
+        <span class="text-stone"> — FotoobrazyPRO, Tišnov</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CO NABÍZÍME ============ -->
+<section id="sluzby" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <span class="text-[.82rem] font-semibold uppercase tracking-[.2em] text-accent">Co nabízíme</span>
+      <h2 class="mt-4 font-serif font-semibold leading-[1.08] tracking-[-.02em] text-[2.5rem] sm:text-[3.3rem]">
+        Tři způsoby, jak vzpomínku zhmotnit.
+      </h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-6">
+      <!-- card 1 -->
+      <article class="bezel rounded-[1.6rem] p-2 reveal">
+        <div class="bezel__core rounded-[1.25rem] p-8 h-full flex flex-col">
+          <div class="w-14 h-14 rounded-full bg-accent/10 text-accent grid place-items-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="m3 14 5-4 4 3 4-4 5 5"/></svg>
+          </div>
+          <h3 class="mt-6 font-serif text-[1.7rem] font-semibold">Fotoobraz na plátno</h3>
+          <p class="mt-3 text-[1.08rem] leading-relaxed text-stone flex-1">
+            Na šířku, na výšku i čtverec — od malého formátu až po velkoplošný
+            obraz 125 × 70 cm. Napnuté na rám, připravené pověsit.
+          </p>
+          <p class="mt-6 font-semibold text-[1.05rem]">od <span class="text-accent text-[1.3rem]">149 Kč</span></p>
+        </div>
+      </article>
+      <!-- card 2 -->
+      <article class="bezel rounded-[1.6rem] p-2 reveal">
+        <div class="bezel__core rounded-[1.25rem] p-8 h-full flex flex-col">
+          <div class="w-14 h-14 rounded-full bg-accent/10 text-accent grid place-items-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12l4 4v12H4z"/><path d="M16 4v4h4M8 13h8M8 17h8"/></svg>
+          </div>
+          <h3 class="mt-6 font-serif text-[1.7rem] font-semibold">Tisk fotografií</h3>
+          <p class="mt-3 text-[1.08rem] leading-relaxed text-stone flex-1">
+            Klasický tisk na fotopapír 9 × 13 až 20 × 30, průkazové fotografie.
+            Povrch lesk, mat, jemný mat nebo polomat.
+          </p>
+          <p class="mt-6 font-semibold text-[1.05rem]">od <span class="text-accent text-[1.3rem]">8 Kč</span></p>
+        </div>
+      </article>
+      <!-- card 3 -->
+      <article class="bezel rounded-[1.6rem] p-2 reveal">
+        <div class="bezel__core rounded-[1.25rem] p-8 h-full flex flex-col">
+          <div class="w-14 h-14 rounded-full bg-accent/10 text-accent grid place-items-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/></svg>
+          </div>
+          <h3 class="mt-6 font-serif text-[1.7rem] font-semibold">Digitální retuš</h3>
+          <p class="mt-3 text-[1.08rem] leading-relaxed text-stone flex-1">
+            Oživení starých fotografií, odstranění vad, úprava jasu a&nbsp;barev.
+            Citlivě, s&nbsp;respektem k&nbsp;původnímu snímku.
+          </p>
+          <p class="mt-6 font-semibold text-[1.05rem]">od <span class="text-accent text-[1.3rem]">100 Kč</span></p>
+        </div>
+      </article>
+    </div>
+
+    <!-- quality strip -->
+    <div class="mt-10 bezel rounded-[1.6rem] p-2 reveal">
+      <div class="bezel__core rounded-[1.25rem] px-8 py-9 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div>
+          <p class="font-serif text-[2.2rem] font-semibold text-accent leading-none">70–100</p>
+          <p class="mt-2 text-[1.02rem] text-stone">let zaručené trvanlivosti pigmentového tisku</p>
+        </div>
+        <div>
+          <p class="font-serif text-[2.2rem] font-semibold text-accent leading-none">9–12</p>
+          <p class="mt-2 text-[1.02rem] text-stone">barevných kanálů — věrné, hluboké barvy</p>
+        </div>
+        <div>
+          <p class="font-serif text-[2.2rem] font-semibold text-accent leading-none">Epson<span class="text-ink"> · </span>Canon</p>
+          <p class="mt-2 text-[1.02rem] text-stone">profesionální tisková technika</p>
+        </div>
+        <div>
+          <p class="font-serif text-[2.2rem] font-semibold text-accent leading-none">UV<span class="text-ink"> + </span>vlhko</p>
+          <p class="mt-2 text-[1.02rem] text-stone">odolnost slunci i vlhkosti, barvy nevyblednou</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VELIKOST & CENÍK ============ -->
+<section id="cenik" class="py-20 sm:py-28 bg-panel/60 border-y border-ink/10">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <span class="text-[.82rem] font-semibold uppercase tracking-[.2em] text-accent">Velikost &amp; ceník</span>
+      <h2 class="mt-4 font-serif font-semibold leading-[1.08] tracking-[-.02em] text-[2.5rem] sm:text-[3.3rem]">
+        Jak velký obraz se k vám hodí?
+      </h2>
+      <p class="mt-5 text-[1.14rem] leading-relaxed text-stone">
+        Vyberte tvar a&nbsp;rozměr — ukážeme vám, jak bude obraz velký
+        ve&nbsp;srovnání s&nbsp;běžnou sedačkou. Přesnou cenu pro vaši
+        fotografii rád potvrdím telefonicky.
+      </p>
+    </div>
+
+    <div class="mt-14 grid lg:grid-cols-12 gap-8 items-start">
+
+      <!-- controls -->
+      <div class="lg:col-span-5 bezel rounded-[1.6rem] p-2 reveal">
+        <div class="bezel__core rounded-[1.25rem] p-7 sm:p-9">
+
+          <p class="text-[1.05rem] font-semibold mb-3">1 · Tvar obrazu</p>
+          <div class="grid grid-cols-3 gap-3">
+            <template x-for="o in orients" :key="o.id">
+              <button @click="setOrient(o.id)"
+                      class="rounded-2xl border-2 py-4 px-2 text-[.98rem] font-semibold transition-all duration-300"
+                      :class="orient===o.id ? 'border-accent bg-accent/10 text-accent' : 'border-ink/15 hover:border-ink/35'">
+                <span class="block mx-auto mb-2 bg-current/0">
+                  <span class="block mx-auto bg-stone"
+                        :style="o.id==='sirka' ? 'width:34px;height:24px' : o.id==='vyska' ? 'width:24px;height:34px' : 'width:28px;height:28px'"></span>
+                </span>
+                <span x-text="o.label"></span>
+              </button>
+            </template>
+          </div>
+
+          <p class="text-[1.05rem] font-semibold mt-8 mb-3">2 · Rozměr (cm)</p>
+          <div class="relative">
+            <select x-model.number="sizeIndex"
+                    class="w-full appearance-none rounded-2xl border-2 border-ink/15 bg-panel px-5 py-4 text-[1.12rem] font-semibold focus:border-accent">
+              <template x-for="(s,i) in currentSizes" :key="i">
+                <option :value="i" x-text="s[0] + ' × ' + s[1] + ' cm'"></option>
+              </template>
+            </select>
+            <span class="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-stone">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </span>
+          </div>
+
+          <div class="mt-8 rounded-2xl bg-paper border border-ink/10 px-6 py-5">
+            <p class="text-[.95rem] text-stone">Orientační cena za tento typ</p>
+            <p class="font-serif text-[2.1rem] font-semibold leading-tight" x-text="priceLabel"></p>
+            <p class="mt-1 text-[.92rem] text-stone">
+              Konečná cena závisí na rozměru a&nbsp;úpravě snímku — rád ji upřesním.
+            </p>
+          </div>
+
+          <button @click="prefill()"
+                  class="group mt-7 w-full inline-flex items-center justify-center gap-3 rounded-full bg-accent px-7 py-4 text-paper text-[1.08rem] font-semibold
+                         transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.98] hover:bg-deep">
+            Mám zájem o tuto velikost
+            <span class="grid place-items-center w-9 h-9 rounded-full bg-white/15 transition-transform duration-300 group-hover:translate-x-1">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- live scale preview -->
+      <div class="lg:col-span-7 bezel rounded-[1.6rem] p-2 reveal">
+        <div class="bezel__core rounded-[1.25rem] p-7 sm:p-9">
+          <p class="text-[1.05rem] font-semibold">Náhled velikosti</p>
+          <p class="text-[.95rem] text-stone mb-6">Srovnání s&nbsp;běžnou sedačkou (šířka 200 cm)</p>
+
+          <div class="relative w-full rounded-2xl bg-paper border border-ink/10 overflow-hidden"
+               style="aspect-ratio: 280 / 200;">
+            <!-- floor line -->
+            <div class="absolute inset-x-0 bottom-[14%] border-t border-dashed border-ink/20"></div>
+
+            <!-- canvas (hangs on wall) -->
+            <div class="absolute left-1/2 -translate-x-1/2 transition-all duration-500 ease-[cubic-bezier(.32,.72,0,1)]"
+                 :style="canvasStyle">
+              <div class="w-full h-full bg-stone/85 shadow-[0_0_0_3px_#FBF6EF,0_0_0_4px_rgba(221,24,59,.6),0_14px_24px_-14px_rgba(23,19,17,.55)]"></div>
+            </div>
+
+            <!-- sofa silhouette -->
+            <div class="absolute bottom-[14%] left-[8%] text-ink/25"
+                 :style="'width:'+(200/280*100)+'%'">
+              <svg viewBox="0 0 200 86" class="w-full h-auto" fill="currentColor" aria-hidden="true">
+                <rect x="0" y="34" width="200" height="34" rx="10"/>
+                <rect x="2" y="14" width="22" height="56" rx="9"/>
+                <rect x="176" y="14" width="22" height="56" rx="9"/>
+                <rect x="24" y="22" width="152" height="24" rx="8"/>
+                <rect x="20" y="68" width="12" height="16" rx="3"/>
+                <rect x="168" y="68" width="12" height="16" rx="3"/>
+              </svg>
+            </div>
+
+            <span class="absolute bottom-3 right-4 text-[.85rem] font-semibold text-stone"
+                  x-text="dimText"></span>
+          </div>
+
+          <p class="mt-6 text-[.98rem] text-stone leading-relaxed">
+            Nevíte si rady s&nbsp;výběrem? Zavolejte —
+            <a href="tel:+420776654099" class="u-link font-semibold text-ink">+420&nbsp;776&nbsp;654&nbsp;099</a>
+            — společně vybereme ten správný formát i&nbsp;úpravu.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALERIE ============ -->
+<section id="galerie" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 reveal">
+      <div class="max-w-2xl">
+        <span class="text-[.82rem] font-semibold uppercase tracking-[.2em] text-accent">Galerie</span>
+        <h2 class="mt-4 font-serif font-semibold leading-[1.08] tracking-[-.02em] text-[2.5rem] sm:text-[3.3rem]">
+          Ukázky tisku na plátno.
+        </h2>
+      </div>
+      <p class="text-[.95rem] text-stone max-w-sm">
+        Ilustrační ukázky — vaše vlastní fotografie sem rád doplníme.
+        Klepnutím obraz zvětšíte.
+      </p>
+    </div>
+
+    <div class="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 auto-rows-[180px] sm:auto-rows-[230px]">
+      <template x-for="(g,i) in gallery" :key="i">
+        <button @click="openLightbox(i)"
+                class="frame rounded-[1rem] !p-2 sm:!p-3 overflow-hidden group"
+                :class="g.span"
+                :aria-label="'Zvětšit: ' + g.alt">
+          <span class="frame__inner !shadow-[0_0_0_1px_rgba(23,19,17,.1)] block w-full h-full rounded-[2px]">
+            <img :src="g.src" :alt="g.alt"
+                 class="w-full h-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.32,.72,0,1)] group-hover:scale-[1.06]" />
+          </span>
+        </button>
+      </template>
+    </div>
+  </div>
+</section>
+
+<!-- lightbox -->
+<div x-show="lightbox.open" x-transition.opacity.duration.250ms
+     class="fixed inset-0 z-[75] bg-ink/92 backdrop-blur-md flex items-center justify-center p-5 sm:p-10"
+     @keydown.escape.window="lightbox.open=false"
+     @keydown.arrow-right.window="lbNext()" @keydown.arrow-left.window="lbPrev()"
+     style="display:none">
+  <button @click="lightbox.open=false" class="absolute top-5 right-5 grid place-items-center w-12 h-12 rounded-full bg-white/10 text-paper" aria-label="Zavřít">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <button @click="lbPrev()" class="absolute left-3 sm:left-7 grid place-items-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/10 text-paper" aria-label="Předchozí">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button @click="lbNext()" class="absolute right-3 sm:right-7 grid place-items-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/10 text-paper" aria-label="Další">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+  <figure class="max-w-5xl w-full">
+    <div class="frame rounded-[1rem] mx-auto" style="max-width:min(90vw,860px)">
+      <div class="frame__inner rounded-[3px]">
+        <img :src="gallery[lightbox.index]?.src" :alt="gallery[lightbox.index]?.alt" class="max-h-[72vh] w-full object-contain bg-paper" />
+      </div>
+    </div>
+    <figcaption class="mt-4 text-center text-paper/80 text-[1rem]" x-text="gallery[lightbox.index]?.alt"></figcaption>
+  </figure>
+</div>
+
+<!-- ============ KONTAKT ============ -->
+<section id="kontakt" class="py-20 sm:py-28 bg-panel/60 border-t border-ink/10">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-12 gap-12">
+
+    <!-- contact info -->
+    <div class="lg:col-span-5 reveal">
+      <span class="text-[.82rem] font-semibold uppercase tracking-[.2em] text-accent">Kontakt</span>
+      <h2 class="mt-4 font-serif font-semibold leading-[1.08] tracking-[-.02em] text-[2.5rem] sm:text-[3.3rem]">
+        Nejraději si zavoláme.
+      </h2>
+      <p class="mt-5 text-[1.14rem] leading-relaxed text-stone">
+        Stačí zavolat a&nbsp;v&nbsp;klidu si vše domluvíme — poradím
+        s&nbsp;výběrem fotografie, formátem i&nbsp;úpravou.
+      </p>
+
+      <a href="tel:+420776654099"
+         class="group mt-8 flex items-center gap-4 rounded-[1.4rem] bg-accent px-7 py-6 text-paper
+                transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.985] hover:bg-deep">
+        <span class="grid place-items-center w-14 h-14 rounded-full bg-white/15 shrink-0">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+        </span>
+        <span>
+          <span class="block text-[.92rem] uppercase tracking-[.16em] text-paper/75">Telefon</span>
+          <span class="block text-[1.7rem] font-semibold leading-tight">+420 776 654 099</span>
+        </span>
+      </a>
+
+      <div class="mt-5 grid sm:grid-cols-2 gap-4 text-[1.05rem]">
+        <a href="mailto:das1979@seznam.cz" class="rounded-2xl bg-panel border border-ink/10 px-6 py-5 hover:border-accent transition-colors duration-300">
+          <span class="block text-[.85rem] uppercase tracking-[.14em] text-stone">E-mail</span>
+          <span class="block mt-1 font-semibold break-all">das1979@seznam.cz</span>
+        </a>
+        <div class="rounded-2xl bg-panel border border-ink/10 px-6 py-5">
+          <span class="block text-[.85rem] uppercase tracking-[.14em] text-stone">Adresa</span>
+          <span class="block mt-1 font-semibold">Brněnská 185<br />666 01 Tišnov</span>
+        </div>
+      </div>
+      <p class="mt-4 text-[.95rem] text-stone">FotoobrazyPRO — Stefan Paralič · IČ 06760091</p>
+
+      <div class="mt-7 frame rounded-[1.2rem] !p-2">
+        <iframe
+          class="w-full h-64 rounded-[6px] border-0"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          title="Mapa — Brněnská 185, Tišnov"
+          src="https://www.google.com/maps?q=Brn%C4%9Bnsk%C3%A1%20185,%20666%2001%20Ti%C5%A1nov&output=embed"></iframe>
+      </div>
+    </div>
+
+    <!-- mailto form -->
+    <div class="lg:col-span-7 reveal">
+      <div class="bezel rounded-[1.8rem] p-2 h-full">
+        <div class="bezel__core rounded-[1.45rem] p-7 sm:p-10">
+          <h3 class="font-serif text-[1.9rem] font-semibold">Napište mi</h3>
+          <p class="mt-2 text-[1.04rem] text-stone">
+            Vyplňte pár údajů a&nbsp;klepněte na tlačítko — otevře se vaše
+            e-mailová aplikace s&nbsp;předvyplněnou zprávou. Nic se nikam
+            neodesílá samo, vy máte vše pod kontrolou.
+          </p>
+
+          <form class="mt-8 space-y-5" @submit.prevent="sendMail()">
+            <div class="grid sm:grid-cols-2 gap-5">
+              <label class="block">
+                <span class="block text-[1rem] font-semibold mb-2">Jméno</span>
+                <input type="text" x-model="form.name" required autocomplete="name"
+                       class="w-full rounded-2xl border-2 border-ink/15 bg-paper px-5 py-4 text-[1.08rem] focus:border-accent" />
+              </label>
+              <label class="block">
+                <span class="block text-[1rem] font-semibold mb-2">Telefon</span>
+                <input type="tel" x-model="form.phone" autocomplete="tel"
+                       class="w-full rounded-2xl border-2 border-ink/15 bg-paper px-5 py-4 text-[1.08rem] focus:border-accent" />
+              </label>
+            </div>
+            <label class="block">
+              <span class="block text-[1rem] font-semibold mb-2">Váš e-mail</span>
+              <input type="email" x-model="form.email" autocomplete="email"
+                     class="w-full rounded-2xl border-2 border-ink/15 bg-paper px-5 py-4 text-[1.08rem] focus:border-accent" />
+            </label>
+            <label class="block">
+              <span class="block text-[1rem] font-semibold mb-2">Zpráva</span>
+              <textarea x-model="form.msg" rows="5" required
+                        class="w-full rounded-2xl border-2 border-ink/15 bg-paper px-5 py-4 text-[1.08rem] focus:border-accent resize-y"
+                        placeholder="Napište, o co máte zájem (typ obrazu, velikost, počet kusů…)."></textarea>
+            </label>
+
+            <button type="submit"
+                    class="group w-full inline-flex items-center justify-center gap-3 rounded-full bg-ink px-8 py-5 text-paper text-[1.12rem] font-semibold
+                           transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.98] hover:bg-black">
+              Odeslat zprávu e-mailem
+              <span class="grid place-items-center w-10 h-10 rounded-full bg-white/12 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-[1px]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-7-8-3z"/></svg>
+              </span>
+            </button>
+            <p class="text-center text-[.92rem] text-stone">
+              Raději mluvíte? <a href="tel:+420776654099" class="u-link font-semibold text-ink">Zavolejte 776 654 099</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-paper">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-16 grid md:grid-cols-3 gap-12">
+    <div>
+      <p class="font-serif text-[2rem] font-semibold">FotoobrazyPRO</p>
+      <p class="mt-3 text-paper/65 leading-relaxed max-w-xs">
+        Fotoateliér v&nbsp;Tišnově. Vzpomínky, které zůstanou — na plátně
+        i&nbsp;na papíře.
+      </p>
+    </div>
+    <div class="text-[1.02rem] space-y-2 text-paper/75">
+      <p class="text-paper/50 uppercase tracking-[.16em] text-[.82rem] mb-3">Kontakt</p>
+      <p><a href="tel:+420776654099" class="u-link">+420 776 654 099</a></p>
+      <p><a href="mailto:das1979@seznam.cz" class="u-link break-all">das1979@seznam.cz</a></p>
+      <p>Brněnská 185, 666 01 Tišnov</p>
+      <p class="text-paper/50">IČ 06760091</p>
+    </div>
+    <div class="text-[1.02rem] space-y-2 text-paper/75">
+      <p class="text-paper/50 uppercase tracking-[.16em] text-[.82rem] mb-3">Informace</p>
+      <p><button @click="modal='obchodni'" class="u-link text-left">Obchodní podmínky</button></p>
+      <p><button @click="modal='ochrana'" class="u-link text-left">Ochrana osobních údajů</button></p>
+      <p><a href="#cenik" class="u-link">Velikost &amp; ceník</a></p>
+      <p><a href="#galerie" class="u-link">Galerie</a></p>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[.92rem] text-paper/50">
+      <p>© 2026 FotoobrazyPRO — Stefan Paralič. Všechna práva vyhrazena.</p>
+      <p>Vzpomínky, které zůstanou.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MODALS (podmínky / ochrana) ============ -->
+<div x-show="modal" x-transition.opacity.duration.250ms
+     class="fixed inset-0 z-[78] bg-ink/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6"
+     @click.self="modal=''" @keydown.escape.window="modal=''" style="display:none">
+  <div class="bg-paper w-full sm:max-w-2xl sm:rounded-[1.6rem] rounded-t-[1.6rem] max-h-[88vh] overflow-y-auto">
+    <div class="sticky top-0 bg-paper/95 backdrop-blur px-7 sm:px-9 py-5 flex items-center justify-between border-b border-ink/10">
+      <h3 class="font-serif text-[1.6rem] font-semibold"
+          x-text="modal==='obchodni' ? 'Obchodní podmínky' : 'Ochrana osobních údajů'"></h3>
+      <button @click="modal=''" class="grid place-items-center w-11 h-11 rounded-full bg-ink/8" aria-label="Zavřít">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="px-7 sm:px-9 py-7 text-[1.05rem] leading-relaxed text-stone space-y-4" x-show="modal==='obchodni'">
+      <p><strong class="text-ink">Prodávající:</strong> Stefan Paralič — FotoobrazyPRO, Brněnská 185, 666 01 Tišnov, IČ 06760091, e-mail das1979@seznam.cz, tel. +420 776 654 099.</p>
+      <p><strong class="text-ink">Objednávka:</strong> Zakázka se domlouvá telefonicky nebo e-mailem. Po upřesnění fotografie, formátu a&nbsp;úpravy potvrdím konečnou cenu a&nbsp;termín předání.</p>
+      <p><strong class="text-ink">Cena a&nbsp;platba:</strong> Ceny jsou uváděny orientačně podle typu výrobku; konečná cena vždy závisí na zvoleném rozměru a&nbsp;rozsahu úprav a&nbsp;je potvrzena před zahájením zakázky.</p>
+      <p><strong class="text-ink">Předání:</strong> Hotovou zakázku lze vyzvednout osobně v&nbsp;Tišnově nebo zaslat po dohodě.</p>
+      <p><strong class="text-ink">Reklamace:</strong> Případnou vadu díla řešte prosím neprodleně telefonicky nebo e-mailem; vadný tisk bezplatně opravím nebo zhotovím znovu.</p>
+      <p class="text-[.95rem]">Toto je stručné shrnutí. Úplné znění podmínek pro konkrétní zakázku rád zašlu na vyžádání.</p>
+    </div>
+
+    <div class="px-7 sm:px-9 py-7 text-[1.05rem] leading-relaxed text-stone space-y-4" x-show="modal==='ochrana'">
+      <p><strong class="text-ink">Správce údajů:</strong> Stefan Paralič, Brněnská 185, 666 01 Tišnov, IČ 06760091, das1979@seznam.cz.</p>
+      <p><strong class="text-ink">Jaké údaje:</strong> identifikační a&nbsp;kontaktní údaje a&nbsp;údaje nezbytné ke&nbsp;splnění vaší objednávky.</p>
+      <p><strong class="text-ink">Účel:</strong> vyřízení a&nbsp;předání objednávky a&nbsp;související komunikace.</p>
+      <p><strong class="text-ink">Doba uchování:</strong> po dobu plnění zakázky a&nbsp;následně po dobu nezbytnou dle zákona, nejdéle 10&nbsp;let od ukončení smlouvy.</p>
+      <p><strong class="text-ink">Vaše práva:</strong> přístup k&nbsp;údajům, oprava, výmaz, omezení zpracování, námitka, přenositelnost a&nbsp;odvolání souhlasu. Uplatníte je e-mailem na das1979@seznam.cz.</p>
+      <p class="text-[.95rem]">Údaje nepředáváme třetím stranám pro marketingové účely.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function site() {
+    return {
+      scrolled: false,
+      mobileOpen: false,
+      modal: '',
+      lightbox: { open: false, index: 0 },
+
+      orient: 'sirka',
+      sizeIndex: 0,
+      orients: [
+        { id:'sirka',   label:'Na šířku' },
+        { id:'vyska',   label:'Na výšku' },
+        { id:'ctverec', label:'Čtverec'  },
+      ],
+      sizes: {
+        sirka:   [[30,20],[40,30],[45,30],[60,40],[60,45],[75,50],[80,60],[90,60],[100,75],[120,80],[125,70]],
+        vyska:   [[20,30],[30,40],[30,45],[40,60],[45,60],[50,75],[60,80],[60,90],[75,100],[80,120],[70,125]],
+        ctverec: [[20,20],[30,30],[40,40],[50,50],[60,60],[80,80],[100,100]],
+      },
+
+      gallery: [
+        { src:'images/krajina-hory.jpg', alt:'Horská krajina na plátně',        span:'col-span-2 row-span-2' },
+        { src:'images/portret-zena.jpg', alt:'Portrét — barevný',               span:'' },
+        { src:'images/les.jpg',          alt:'Les v ranním světle',             span:'' },
+        { src:'images/rodina.jpg',       alt:'Rodinná chvíle',                  span:'col-span-2' },
+        { src:'images/more.jpg',         alt:'Moře — vertikální formát',        span:'row-span-2' },
+        { src:'images/dite.jpg',         alt:'Dětský portrét',                  span:'' },
+        { src:'images/kvetiny.jpg',      alt:'Květinové zátiší',                span:'' },
+        { src:'images/portret-cb.jpg',   alt:'Černobílý portrét',               span:'' },
+      ],
+
+      get currentSizes() { return this.sizes[this.orient]; },
+      get current() { return this.currentSizes[this.sizeIndex] || this.currentSizes[0]; },
+      get dimText() { return this.current[0] + ' × ' + this.current[1] + ' cm'; },
+      get priceLabel() {
+        return this.orient === 'ctverec' ? 'od 299 Kč' : 'od 149 Kč';
+      },
+      get canvasStyle() {
+        // reference box = 280 cm wide × 200 cm tall; sofa sits on floor at bottom 14%
+        const w = this.current[0], h = this.current[1];
+        const wp = (w / 280) * 100;
+        const hp = (h / 200) * 100;
+        // hang the print so its bottom is ~6% above the sofa top (sofa ~30% tall of box)
+        const bottom = 14 + 30 + 4;
+        return `width:${wp}%; height:${hp}%; bottom:${bottom}%;`;
+      },
+
+      setOrient(id) { this.orient = id; this.sizeIndex = 0; },
+
+      prefill() {
+        const tvar = this.orients.find(o => o.id === this.orient).label.toLowerCase();
+        this.form.msg = `Dobrý den, mám zájem o fotoobraz na plátno (${tvar}), rozměr ${this.dimText}. Prosím o cenovou nabídku a další informace.`;
+        const el = document.getElementById('kontakt');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      },
+
+      openLightbox(i) { this.lightbox.index = i; this.lightbox.open = true; },
+      lbNext() { this.lightbox.index = (this.lightbox.index + 1) % this.gallery.length; },
+      lbPrev() { this.lightbox.index = (this.lightbox.index - 1 + this.gallery.length) % this.gallery.length; },
+
+      form: { name:'', phone:'', email:'', msg:'' },
+      sendMail() {
+        const subject = 'Poptávka z webu — FotoobrazyPRO';
+        const body =
+          `Jméno: ${this.form.name}\n` +
+          `Telefon: ${this.form.phone}\n` +
+          `E-mail: ${this.form.email}\n\n` +
+          `${this.form.msg}`;
+        window.location.href =
+          'mailto:das1979@seznam.cz?subject=' + encodeURIComponent(subject) +
+          '&body=' + encodeURIComponent(body);
+      },
+
+      init() {
+        const onScroll = () => { this.scrolled = window.scrollY > 24; };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const els = document.querySelectorAll('.reveal');
+        if (reduce || !('IntersectionObserver' in window)) {
+          els.forEach(e => e.classList.add('in'));
+          return;
+        }
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(en => {
+            if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+        els.forEach(e => io.observe(e));
+      },
+    };
+  }
+</script>
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<style>[x-cloak]{display:none!important}</style>
+</body>
+</html>
