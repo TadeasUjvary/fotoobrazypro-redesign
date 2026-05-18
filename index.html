@@ -360,9 +360,10 @@
         Jak velký obraz se k vám hodí?
       </h2>
       <p class="mt-5 text-[1.14rem] leading-relaxed text-stone">
-        Vyberte tvar a&nbsp;rozměr — ukážeme vám, jak bude obraz velký
-        ve&nbsp;srovnání s&nbsp;běžnou sedačkou. Přesnou cenu pro vaši
-        fotografii rád potvrdím telefonicky.
+        Nahrajte svou fotografii a&nbsp;hned uvidíte, jak bude hotový obraz
+        vypadat — i&nbsp;jak bude velký ve&nbsp;srovnání s&nbsp;běžnou
+        sedačkou. Fotka zůstává jen ve&nbsp;vašem prohlížeči, nikam
+        se&nbsp;neodesílá.
       </p>
     </div>
 
@@ -372,7 +373,36 @@
       <div class="lg:col-span-5 bezel rounded-[1.6rem] p-2 reveal">
         <div class="bezel__core rounded-[1.25rem] p-7 sm:p-9">
 
-          <p class="text-[1.05rem] font-semibold mb-3">1 · Tvar obrazu</p>
+          <p class="text-[1.05rem] font-semibold mb-3">1 · Vaše fotka</p>
+
+          <label x-show="!photoSrc"
+                 @dragover.prevent="dragOver=true" @dragleave.prevent="dragOver=false"
+                 @drop.prevent="onDrop($event)"
+                 class="flex flex-col items-center justify-center text-center gap-2 rounded-2xl border-2 border-dashed px-6 py-9 cursor-pointer transition-colors duration-300"
+                 :class="dragOver ? 'border-accent bg-accent/5' : 'border-ink/25 hover:border-accent'">
+            <span class="grid place-items-center w-14 h-14 rounded-full bg-accent/10 text-accent mb-1">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
+            </span>
+            <span class="text-[1.1rem] font-semibold">Vyberte fotografii z počítače</span>
+            <span class="text-[.92rem] text-stone">nebo ji sem přetáhněte · JPG nebo PNG</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="onFile($event)" />
+          </label>
+
+          <div x-show="photoSrc" class="flex items-center gap-4 rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3">
+            <img :src="photoSrc" alt="" class="w-14 h-14 rounded-xl object-cover shrink-0" />
+            <span class="flex-1 min-w-0 text-[1rem] font-semibold truncate" x-text="photoName"></span>
+            <button @click="clearPhoto()"
+                    class="shrink-0 rounded-full border-2 border-ink/20 px-4 py-2 text-[.95rem] font-semibold transition-colors duration-300 hover:border-accent hover:text-accent">
+              Změnit
+            </button>
+          </div>
+
+          <p x-show="photoError" x-text="photoError" class="mt-2 text-[.95rem] font-semibold text-accent"></p>
+          <p class="mt-3 text-[.88rem] text-stone">
+            Fotka se zpracuje jen u&nbsp;vás v&nbsp;prohlížeči — nikam se&nbsp;neodesílá.
+          </p>
+
+          <p class="text-[1.05rem] font-semibold mt-8 mb-3">2 · Tvar obrazu</p>
           <div class="grid grid-cols-3 gap-3">
             <template x-for="o in orients" :key="o.id">
               <button @click="setOrient(o.id)"
@@ -387,7 +417,7 @@
             </template>
           </div>
 
-          <p class="text-[1.05rem] font-semibold mt-8 mb-3">2 · Rozměr (cm)</p>
+          <p class="text-[1.05rem] font-semibold mt-8 mb-3">3 · Rozměr (cm)</p>
           <div class="relative">
             <select x-model.number="sizeIndex"
                     class="w-full appearance-none rounded-2xl border-2 border-ink/15 bg-panel px-5 py-4 text-[1.12rem] font-semibold focus:border-accent">
@@ -419,11 +449,34 @@
         </div>
       </div>
 
-      <!-- live scale preview -->
-      <div class="lg:col-span-7 bezel rounded-[1.6rem] p-2 reveal">
-        <div class="bezel__core rounded-[1.25rem] p-7 sm:p-9">
-          <p class="text-[1.05rem] font-semibold">Náhled velikosti</p>
-          <p class="text-[.95rem] text-stone mb-6">Srovnání s&nbsp;běžnou sedačkou (šířka 200 cm)</p>
+      <!-- preview column -->
+      <div class="lg:col-span-7 space-y-7 reveal">
+
+        <!-- finished-canvas preview of the uploaded photo -->
+        <div class="bezel rounded-[1.6rem] p-2">
+          <div class="bezel__core rounded-[1.25rem] p-7 sm:p-9">
+            <p class="text-[1.05rem] font-semibold">Náhled vašeho obrazu</p>
+            <p class="text-[.95rem] text-stone mb-6">Takto bude vypadat hotový fotoobraz na plátně</p>
+            <div class="flex justify-center">
+              <figure class="frame rounded-[1.2rem] max-w-full transition-all duration-500 ease-[cubic-bezier(.32,.72,0,1)]"
+                      :style="previewStyle">
+                <div class="frame__inner rounded-[3px] w-full" :style="'aspect-ratio:' + current[0] + ' / ' + current[1]">
+                  <img x-show="photoSrc" :src="photoSrc" alt="Náhled vašeho fotoobrazu na plátně" />
+                  <div x-show="!photoSrc" class="w-full h-full grid place-items-center bg-panel text-center px-6">
+                    <span class="text-[1.02rem] text-stone leading-relaxed">Nahrajte fotku vlevo<br />a&nbsp;hned uvidíte náhled obrazu.</span>
+                  </div>
+                </div>
+                <figcaption class="pt-3 text-center font-serif italic text-[1.02rem] text-stone" x-text="dimText"></figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+
+        <!-- live scale preview -->
+        <div class="bezel rounded-[1.6rem] p-2">
+          <div class="bezel__core rounded-[1.25rem] p-7 sm:p-9">
+            <p class="text-[1.05rem] font-semibold">Náhled velikosti</p>
+            <p class="text-[.95rem] text-stone mb-6">Srovnání s&nbsp;běžnou sedačkou (šířka 200 cm)</p>
 
           <div class="relative w-full rounded-2xl bg-paper border border-ink/10 overflow-hidden"
                style="aspect-ratio: 280 / 200;">
@@ -433,7 +486,10 @@
             <!-- canvas (hangs on wall) -->
             <div class="absolute left-1/2 -translate-x-1/2 transition-all duration-500 ease-[cubic-bezier(.32,.72,0,1)]"
                  :style="canvasStyle">
-              <div class="w-full h-full bg-stone/85 shadow-[0_0_0_3px_#FBF6EF,0_0_0_4px_rgba(221,24,59,.6),0_14px_24px_-14px_rgba(23,19,17,.55)]"></div>
+              <div class="w-full h-full overflow-hidden shadow-[0_0_0_3px_#FBF6EF,0_0_0_4px_rgba(221,24,59,.6),0_14px_24px_-14px_rgba(23,19,17,.55)]">
+                <img x-show="photoSrc" :src="photoSrc" alt="" class="w-full h-full object-cover" />
+                <div x-show="!photoSrc" class="w-full h-full bg-stone/85"></div>
+              </div>
             </div>
 
             <!-- sofa silhouette -->
@@ -458,7 +514,9 @@
             <a href="tel:+420776654099" class="u-link font-semibold text-ink">+420&nbsp;776&nbsp;654&nbsp;099</a>
             — společně vybereme ten správný formát i&nbsp;úpravu.
           </p>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -697,6 +755,11 @@
       modal: '',
       lightbox: { open: false, index: 0 },
 
+      photoSrc: '',
+      photoName: '',
+      photoError: '',
+      dragOver: false,
+
       orient: 'sirka',
       sizeIndex: 0,
       orients: [
@@ -737,11 +800,43 @@
         return `width:${wp}%; height:${hp}%; bottom:${bottom}%;`;
       },
 
+      get previewStyle() {
+        // keep both portrait & landscape inside the column: width = ratio × target height, capped at 100%
+        const ratio = this.current[0] / this.current[1];
+        return `width: min(100%, calc(${ratio} * 340px));`;
+      },
+
       setOrient(id) { this.orient = id; this.sizeIndex = 0; },
+
+      readFile(file) {
+        this.photoError = '';
+        if (!file) return;
+        if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+          this.photoError = 'Nahrajte prosím obrázek ve formátu JPG, PNG nebo WEBP.';
+          return;
+        }
+        if (file.size > 30 * 1024 * 1024) {
+          this.photoError = 'Fotografie je příliš velká (max. 30 MB).';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => { this.photoSrc = e.target.result; this.photoName = file.name; };
+        reader.onerror = () => { this.photoError = 'Fotografii se nepodařilo načíst, zkuste to prosím znovu.'; };
+        reader.readAsDataURL(file);
+      },
+      onFile(e) { this.readFile(e.target.files && e.target.files[0]); },
+      onDrop(e) {
+        this.dragOver = false;
+        this.readFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
+      },
+      clearPhoto() { this.photoSrc = ''; this.photoName = ''; this.photoError = ''; },
 
       prefill() {
         const tvar = this.orients.find(o => o.id === this.orient).label.toLowerCase();
-        this.form.msg = `Dobrý den, mám zájem o fotoobraz na plátno (${tvar}), rozměr ${this.dimText}. Prosím o cenovou nabídku a další informace.`;
+        let msg = `Dobrý den, mám zájem o fotoobraz na plátno (${tvar}), rozměr ${this.dimText}.`;
+        if (this.photoName) msg += ` Fotografii „${this.photoName}" vám rád zašlu / přinesu.`;
+        msg += ` Prosím o cenovou nabídku a další informace.`;
+        this.form.msg = msg;
         const el = document.getElementById('kontakt');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       },
