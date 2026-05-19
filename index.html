@@ -109,7 +109,7 @@
 
 <body class="grain bg-paper text-ink font-sans antialiased"
       x-data="site()" x-cloak
-      :class="{ 'overflow-hidden': mobileOpen || modal || lightbox.open }">
+      :class="{ 'overflow-hidden': mobileOpen || modal || lightbox.open || cartOpen || orderResult }">
 
 <!-- skip link -->
 <a href="#hero" class="sr-only focus:not-sr-only focus:absolute focus:z-[80] focus:left-4 focus:top-4 focus:bg-ink focus:text-paper focus:px-5 focus:py-3 focus:rounded-full">Přeskočit na obsah</a>
@@ -140,6 +140,14 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
         </span>
       </a>
+
+      <button @click="openCart()" class="relative grid place-items-center w-12 h-12 rounded-full border-2 border-ink/15 transition-colors duration-300 hover:border-accent hover:text-accent"
+              :aria-label="'Košík — ' + cartCount + ' položek'">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2.2l2.3 12.1a1.6 1.6 0 0 0 1.6 1.3h8.7a1.6 1.6 0 0 0 1.6-1.3L21 7H5"/></svg>
+        <span x-show="cartCount" x-cloak
+              class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 grid place-items-center rounded-full bg-accent text-paper text-[.72rem] font-bold"
+              x-text="cartCount"></span>
+      </button>
 
       <button @click="mobileOpen = true" class="lg:hidden grid place-items-center w-12 h-12 rounded-full bg-ink text-paper" aria-label="Otevřít menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -362,8 +370,8 @@
       <p class="mt-5 text-[1.14rem] leading-relaxed text-stone">
         Nahrajte svou fotografii a&nbsp;hned uvidíte, jak bude hotový obraz
         vypadat — i&nbsp;jak bude velký ve&nbsp;srovnání s&nbsp;běžnou
-        sedačkou. Fotka zůstává jen ve&nbsp;vašem prohlížeči, nikam
-        se&nbsp;neodesílá.
+        sedačkou. Fotografii bezpečně uchováme jen pro výrobu vaší
+        objednávky.
       </p>
     </div>
 
@@ -390,7 +398,17 @@
 
           <div x-show="photoSrc" class="flex items-center gap-4 rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3">
             <img :src="photoSrc" alt="" class="w-14 h-14 rounded-xl object-cover shrink-0" />
-            <span class="flex-1 min-w-0 text-[1rem] font-semibold truncate" x-text="photoName"></span>
+            <div class="flex-1 min-w-0">
+              <span class="block text-[1rem] font-semibold truncate" x-text="photoName"></span>
+              <span x-show="uploading" class="flex items-center gap-2 text-[.88rem] text-stone mt-0.5">
+                <svg class="animate-spin shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>
+                Nahrávám fotografii…
+              </span>
+              <span x-show="!uploading && photoBlobKey" class="flex items-center gap-1.5 text-[.88rem] font-semibold text-accent mt-0.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Fotografie nahrána
+              </span>
+            </div>
             <button @click="clearPhoto()"
                     class="shrink-0 rounded-full border-2 border-ink/20 px-4 py-2 text-[.95rem] font-semibold transition-colors duration-300 hover:border-accent hover:text-accent">
               Změnit
@@ -399,7 +417,7 @@
 
           <p x-show="photoError" x-text="photoError" class="mt-2 text-[.95rem] font-semibold text-accent"></p>
           <p class="mt-3 text-[.88rem] text-stone">
-            Fotka se zpracuje jen u&nbsp;vás v&nbsp;prohlížeči — nikam se&nbsp;neodesílá.
+            Fotografii bezpečně uložíme a&nbsp;použijeme výhradně pro výrobu vaší objednávky.
           </p>
 
           <p class="text-[1.05rem] font-semibold mt-8 mb-3">2 · Tvar obrazu</p>
@@ -430,21 +448,38 @@
             </span>
           </div>
 
+          <p class="text-[1.05rem] font-semibold mt-8 mb-3">4 · Úprava</p>
+          <label class="flex items-center gap-3 rounded-2xl border-2 border-ink/15 px-5 py-4 cursor-pointer transition-colors duration-300 hover:border-ink/35">
+            <input type="checkbox" x-model="retouch" class="w-5 h-5 accent-accent shrink-0" />
+            <span class="flex-1">
+              <span class="block text-[1rem] font-semibold">Digitální retuš</span>
+              <span class="block text-[.9rem] text-stone">Vyčištění, barvy, jas — citlivá úprava snímku</span>
+            </span>
+            <span class="text-[.95rem] font-semibold text-accent" x-text="retouchPriceLabel"></span>
+          </label>
+
           <div class="mt-8 rounded-2xl bg-paper border border-ink/10 px-6 py-5">
-            <p class="text-[.95rem] text-stone">Orientační cena za tento typ</p>
-            <p class="font-serif text-[2.1rem] font-semibold leading-tight" x-text="priceLabel"></p>
-            <p class="mt-1 text-[.92rem] text-stone">
-              Konečná cena závisí na rozměru a&nbsp;úpravě snímku — rád ji upřesním.
-            </p>
+            <p class="text-[.95rem] text-stone">Cena za tento obraz</p>
+            <p class="font-serif text-[2.1rem] font-semibold leading-tight" x-text="configPriceLabel"></p>
+            <p class="mt-1 text-[.92rem] text-stone">Cena včetně napnutí na rám. Doprava se přičítá v košíku.</p>
           </div>
 
-          <button @click="prefill()"
+          <button @click="addToCart()" :disabled="!photoBlobKey || uploading"
                   class="group mt-7 w-full inline-flex items-center justify-center gap-3 rounded-full bg-accent px-7 py-4 text-paper text-[1.08rem] font-semibold
-                         transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.98] hover:bg-deep">
-            Mám zájem o tuto velikost
-            <span class="grid place-items-center w-9 h-9 rounded-full bg-white/15 transition-transform duration-300 group-hover:translate-x-1">
+                         transition-transform duration-300 ease-[cubic-bezier(.32,.72,0,1)] active:scale-[.98] hover:bg-deep
+                         disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
+            <span x-show="!addedFlash">Přidat do košíku</span>
+            <span x-show="addedFlash" x-cloak>Přidáno do košíku ✓</span>
+            <span x-show="!addedFlash" class="grid place-items-center w-9 h-9 rounded-full bg-white/15 transition-transform duration-300 group-hover:translate-x-1">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </span>
+          </button>
+          <p x-show="!photoBlobKey && !uploading" class="mt-3 text-center text-[.9rem] text-stone">Nejprve nahrajte fotografii (krok&nbsp;1).</p>
+          <p x-show="uploading" x-cloak class="mt-3 text-center text-[.9rem] text-stone">Čekejte na dokončení nahrávání fotografie…</p>
+
+          <button @click="prefill()"
+                  class="mt-4 w-full text-center text-[.98rem] font-semibold text-stone underline underline-offset-4 transition-colors duration-300 hover:text-accent">
+            Raději nezávazně poptat telefonicky / e-mailem
           </button>
         </div>
       </div>
@@ -714,6 +749,188 @@
   </div>
 </footer>
 
+<!-- ============ KOŠÍK / POKLADNA ============ -->
+<div x-show="cartOpen" x-cloak class="fixed inset-0 z-[74]" style="display:none">
+  <div x-show="cartOpen" x-transition.opacity.duration.300ms
+       class="absolute inset-0 bg-ink/60 backdrop-blur-sm" @click="closeCart()"></div>
+
+  <div x-show="cartOpen"
+       x-transition:enter="transition ease-[cubic-bezier(.32,.72,0,1)] duration-400"
+       x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+       x-transition:leave="transition ease-in duration-250"
+       x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+       class="absolute right-0 top-0 h-full w-full sm:max-w-md bg-paper flex flex-col shadow-2xl"
+       @keydown.escape.window="closeCart()">
+
+    <div class="px-6 py-5 flex items-center justify-between border-b border-ink/10 shrink-0">
+      <h3 class="font-serif text-[1.6rem] font-semibold"
+          x-text="checkoutStep==='cart' ? 'Váš košík' : 'Pokladna'"></h3>
+      <button @click="closeCart()" class="grid place-items-center w-11 h-11 rounded-full bg-ink/8" aria-label="Zavřít košík">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+
+      <!-- KROK: KOŠÍK -->
+      <template x-if="checkoutStep==='cart'">
+        <div class="space-y-5">
+          <div x-show="!cart.length" class="text-center py-16">
+            <p class="font-serif text-[1.5rem] font-semibold">Košík je prázdný</p>
+            <p class="mt-2 text-stone">Nahrajte fotku a vyberte velikost obrazu.</p>
+            <button @click="closeCart(); document.getElementById('cenik').scrollIntoView({behavior:'smooth'})"
+                    class="mt-6 inline-flex rounded-full bg-ink px-7 py-3 text-paper font-semibold hover:bg-black transition-colors">
+              Vybrat obraz
+            </button>
+          </div>
+
+          <template x-for="it in cart" :key="it.uid">
+            <div class="flex gap-4 rounded-2xl border border-ink/10 bg-panel/60 p-3">
+              <img :src="it.blobUrl" alt="" class="w-20 h-20 rounded-xl object-cover shrink-0" />
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold leading-snug">Fotoobraz na plátně</p>
+                <p class="text-[.9rem] text-stone" x-text="it.width_cm + ' × ' + it.height_cm + ' cm' + (it.retouch ? ' · retuš' : '')"></p>
+                <p class="text-[.85rem] text-stone truncate" x-text="it.photoName"></p>
+                <div class="mt-2 flex items-center justify-between gap-3">
+                  <div class="inline-flex items-center rounded-full border border-ink/15">
+                    <button @click="changeQty(it.uid,-1)" class="w-8 h-8 grid place-items-center text-lg" aria-label="Méně">−</button>
+                    <span class="w-7 text-center text-[.95rem] font-semibold" x-text="it.quantity"></span>
+                    <button @click="changeQty(it.uid,1)" class="w-8 h-8 grid place-items-center text-lg" aria-label="Více">+</button>
+                  </div>
+                  <span class="font-semibold" x-text="formatPrice(lineTotal(it))"></span>
+                </div>
+              </div>
+              <button @click="removeFromCart(it.uid)" class="self-start text-stone hover:text-accent" aria-label="Odebrat">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+              </button>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- KROK: ÚDAJE -->
+      <template x-if="checkoutStep==='details'">
+        <div class="space-y-5">
+          <div class="space-y-3">
+            <input x-model="checkout.name" type="text" placeholder="Jméno a příjmení"
+                   class="w-full rounded-2xl border-2 border-ink/15 bg-panel px-5 py-3.5 focus:border-accent outline-none" />
+            <input x-model="checkout.email" type="email" placeholder="E-mail"
+                   class="w-full rounded-2xl border-2 border-ink/15 bg-panel px-5 py-3.5 focus:border-accent outline-none" />
+            <input x-model="checkout.phone" type="tel" placeholder="Telefon"
+                   class="w-full rounded-2xl border-2 border-ink/15 bg-panel px-5 py-3.5 focus:border-accent outline-none" />
+          </div>
+
+          <div>
+            <p class="text-[.95rem] font-semibold mb-2">Doprava</p>
+            <div class="space-y-2">
+              <template x-for="opt in shippingOptions" :key="opt.id">
+                <label class="flex items-center gap-3 rounded-2xl border-2 px-4 py-3 cursor-pointer transition-colors"
+                       :class="checkout.shipping===opt.id ? 'border-accent bg-accent/5' : 'border-ink/15 hover:border-ink/35'">
+                  <input type="radio" :value="opt.id" x-model="checkout.shipping" class="accent-accent" />
+                  <span class="flex-1" x-text="opt.label"></span>
+                  <span class="font-semibold" x-text="opt.price ? formatPrice(opt.price) : 'zdarma'"></span>
+                </label>
+              </template>
+            </div>
+          </div>
+
+          <div x-show="needsAddress" x-transition class="space-y-3">
+            <input x-model="checkout.street" type="text" placeholder="Ulice a číslo popisné"
+                   class="w-full rounded-2xl border-2 border-ink/15 bg-panel px-5 py-3.5 focus:border-accent outline-none" />
+            <div class="flex gap-3">
+              <input x-model="checkout.city" type="text" placeholder="Město"
+                     class="flex-1 rounded-2xl border-2 border-ink/15 bg-panel px-5 py-3.5 focus:border-accent outline-none" />
+              <input x-model="checkout.zip" type="text" placeholder="PSČ"
+                     class="w-32 rounded-2xl border-2 border-ink/15 bg-panel px-5 py-3.5 focus:border-accent outline-none" />
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-panel/60 border border-ink/10 px-5 py-4 space-y-1.5 text-[.98rem]">
+            <div class="flex justify-between"><span class="text-stone">Mezisoučet</span><span class="font-semibold" x-text="formatPrice(cartItemsTotal)"></span></div>
+            <div class="flex justify-between"><span class="text-stone">Doprava</span><span class="font-semibold" x-text="cartShippingTotal ? formatPrice(cartShippingTotal) : 'zdarma'"></span></div>
+            <div class="flex justify-between pt-2 border-t border-ink/10 text-[1.1rem]"><span class="font-semibold">Celkem</span><span class="font-serif font-semibold text-accent" x-text="formatPrice(cartGrandTotal)"></span></div>
+          </div>
+
+          <label class="flex items-start gap-3 text-[.95rem] text-stone cursor-pointer">
+            <input type="checkbox" x-model="checkout.consent" class="w-5 h-5 accent-accent shrink-0 mt-0.5" />
+            <span>Souhlasím s <button type="button" @click="modal='obchodni'" class="underline underline-offset-2 text-ink hover:text-accent">obchodními podmínkami</button> a <button type="button" @click="modal='ochrana'" class="underline underline-offset-2 text-ink hover:text-accent">zpracováním osobních údajů</button>.</span>
+          </label>
+
+          <p x-show="checkoutError" x-text="checkoutError" x-cloak class="text-[.95rem] font-semibold text-accent"></p>
+        </div>
+      </template>
+    </div>
+
+    <!-- patička panelu -->
+    <div x-show="cart.length" class="border-t border-ink/10 px-6 py-5 space-y-3 shrink-0">
+      <div class="flex items-center justify-between text-[1.15rem]">
+        <span class="font-semibold">Celkem</span>
+        <span class="font-serif font-semibold text-accent" x-text="formatPrice(cartGrandTotal)"></span>
+      </div>
+
+      <template x-if="checkoutStep==='cart'">
+        <button @click="goCheckout()"
+                class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-accent px-7 py-4 text-paper text-[1.05rem] font-semibold hover:bg-deep transition-colors active:scale-[.98]">
+          K pokladně
+        </button>
+      </template>
+
+      <template x-if="checkoutStep==='details'">
+        <div class="space-y-2">
+          <button @click="submitOrder()" :disabled="submitting"
+                  class="w-full inline-flex items-center justify-center gap-2 rounded-full bg-accent px-7 py-4 text-paper text-[1.05rem] font-semibold hover:bg-deep transition-colors active:scale-[.98] disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg x-show="submitting" x-cloak class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>
+            <span x-text="submitting ? 'Přesměrování na platbu…' : 'Zaplatit'"></span>
+          </button>
+          <button @click="backToCart()" :disabled="submitting" class="w-full text-center text-[.95rem] font-semibold text-stone hover:text-accent transition-colors disabled:opacity-50">
+            Zpět do košíku
+          </button>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VÝSLEDEK OBJEDNÁVKY ============ -->
+<div x-show="orderResult" x-cloak x-transition.opacity.duration.300ms
+     class="fixed inset-0 z-[79] bg-ink/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6"
+     style="display:none">
+  <div class="bg-paper w-full sm:max-w-lg sm:rounded-[1.6rem] rounded-t-[1.6rem] p-8 sm:p-10 text-center">
+    <template x-if="orderResult && orderResult.view==='paid'">
+      <div>
+        <div class="mx-auto w-16 h-16 rounded-full bg-accent/10 text-accent grid place-items-center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3 class="mt-6 font-serif text-[2rem] font-semibold">Děkujeme za objednávku!</h3>
+        <p class="mt-3 text-stone">Platba proběhla úspěšně. Potvrzení jsme vám poslali e-mailem. Číslo objednávky <strong class="text-ink" x-text="orderResult.ref"></strong>.</p>
+      </div>
+    </template>
+    <template x-if="orderResult && orderResult.view==='pending'">
+      <div>
+        <div class="mx-auto w-16 h-16 rounded-full bg-stone/15 text-stone grid place-items-center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h3 class="mt-6 font-serif text-[2rem] font-semibold">Platba se zpracovává</h3>
+        <p class="mt-3 text-stone">Objednávku <strong class="text-ink" x-text="orderResult.ref"></strong> evidujeme. Jakmile platbu potvrdí banka, dáme vám e-mailem vědět.</p>
+      </div>
+    </template>
+    <template x-if="orderResult && orderResult.view==='failed'">
+      <div>
+        <div class="mx-auto w-16 h-16 rounded-full bg-accent/10 text-accent grid place-items-center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+        <h3 class="mt-6 font-serif text-[2rem] font-semibold">Platba neproběhla</h3>
+        <p class="mt-3 text-stone">Objednávka <strong class="text-ink" x-text="orderResult.ref"></strong> nebyla zaplacena. Položky máte stále v košíku — můžete platbu zkusit znovu.</p>
+      </div>
+    </template>
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+      <button @click="closeOrderResult()" class="rounded-full bg-ink px-7 py-3.5 text-paper font-semibold hover:bg-black transition-colors">Zavřít</button>
+      <button x-show="orderResult && orderResult.view==='failed'" @click="closeOrderResult(); openCart()"
+              class="rounded-full bg-accent px-7 py-3.5 text-paper font-semibold hover:bg-deep transition-colors">Zkusit znovu</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MODALS (podmínky / ochrana) ============ -->
 <div x-show="modal" x-transition.opacity.duration.250ms
      class="fixed inset-0 z-[78] bg-ink/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6"
@@ -729,20 +946,23 @@
 
     <div class="px-7 sm:px-9 py-7 text-[1.05rem] leading-relaxed text-stone space-y-4" x-show="modal==='obchodni'">
       <p><strong class="text-ink">Prodávající:</strong> Stefan Paralič — FotoobrazyPRO, Brněnská 185, 666 01 Tišnov, IČ 06760091, e-mail das1979@seznam.cz, tel. +420 776 654 099.</p>
-      <p><strong class="text-ink">Objednávka:</strong> Zakázka se domlouvá telefonicky nebo e-mailem. Po upřesnění fotografie, formátu a&nbsp;úpravy potvrdím konečnou cenu a&nbsp;termín předání.</p>
-      <p><strong class="text-ink">Cena a&nbsp;platba:</strong> Ceny jsou uváděny orientačně podle typu výrobku; konečná cena vždy závisí na zvoleném rozměru a&nbsp;rozsahu úprav a&nbsp;je potvrzena před zahájením zakázky.</p>
-      <p><strong class="text-ink">Předání:</strong> Hotovou zakázku lze vyzvednout osobně v&nbsp;Tišnově nebo zaslat po dohodě.</p>
-      <p><strong class="text-ink">Reklamace:</strong> Případnou vadu díla řešte prosím neprodleně telefonicky nebo e-mailem; vadný tisk bezplatně opravím nebo zhotovím znovu.</p>
-      <p class="text-[.95rem]">Toto je stručné shrnutí. Úplné znění podmínek pro konkrétní zakázku rád zašlu na vyžádání.</p>
+      <p><strong class="text-ink">Objednávka:</strong> Smlouva vzniká odesláním objednávky přes košík a&nbsp;jejím zaplacením. Před odesláním vidíte konečnou cenu včetně dopravy.</p>
+      <p><strong class="text-ink">Cena a&nbsp;platba:</strong> Ceny jsou uvedeny v&nbsp;Kč včetně DPH. Platba probíhá online přes platební bránu Comgate (karta, bankovní převod, Apple/Google Pay). Objednávka se zpracovává až po připsání platby.</p>
+      <p><strong class="text-ink">Dodání:</strong> Osobní odběr v&nbsp;Tišnově nebo doručení zvoleným dopravcem (Česká pošta, Zásilkovna). Obvyklá doba zhotovení je 5–10&nbsp;pracovních dnů; o&nbsp;předání k&nbsp;dopravě vás informujeme e-mailem.</p>
+      <p><strong class="text-ink">Odstoupení od&nbsp;smlouvy:</strong> Fotoobrazy jsou zhotovovány na&nbsp;míru podle vaší předlohy. Jde o&nbsp;zboží upravené podle přání spotřebitele, u&nbsp;něhož dle §&nbsp;1837&nbsp;písm.&nbsp;d) občanského zákoníku <strong class="text-ink">nelze odstoupit od&nbsp;smlouvy ve&nbsp;14denní lhůtě</strong>. Před platbou prosím zkontrolujte zvolený formát a&nbsp;fotografii.</p>
+      <p><strong class="text-ink">Reklamace:</strong> Vadu díla uplatněte neprodleně e-mailem na&nbsp;das1979@seznam.cz nebo telefonicky. Oprávněnou reklamaci vyřídíme zdarma novým zhotovením nebo vrácením peněz.</p>
+      <p><strong class="text-ink">Mimosoudní řešení sporů:</strong> K&nbsp;mimosoudnímu řešení spotřebitelských sporů je příslušná Česká obchodní inspekce (coi.cz).</p>
+      <p class="text-[.9rem] italic">Toto je pracovní znění obchodních podmínek; před ostrým spuštěním e-shopu jej nechte zkontrolovat.</p>
     </div>
 
     <div class="px-7 sm:px-9 py-7 text-[1.05rem] leading-relaxed text-stone space-y-4" x-show="modal==='ochrana'">
       <p><strong class="text-ink">Správce údajů:</strong> Stefan Paralič, Brněnská 185, 666 01 Tišnov, IČ 06760091, das1979@seznam.cz.</p>
-      <p><strong class="text-ink">Jaké údaje:</strong> identifikační a&nbsp;kontaktní údaje a&nbsp;údaje nezbytné ke&nbsp;splnění vaší objednávky.</p>
-      <p><strong class="text-ink">Účel:</strong> vyřízení a&nbsp;předání objednávky a&nbsp;související komunikace.</p>
-      <p><strong class="text-ink">Doba uchování:</strong> po dobu plnění zakázky a&nbsp;následně po dobu nezbytnou dle zákona, nejdéle 10&nbsp;let od ukončení smlouvy.</p>
-      <p><strong class="text-ink">Vaše práva:</strong> přístup k&nbsp;údajům, oprava, výmaz, omezení zpracování, námitka, přenositelnost a&nbsp;odvolání souhlasu. Uplatníte je e-mailem na das1979@seznam.cz.</p>
-      <p class="text-[.95rem]">Údaje nepředáváme třetím stranám pro marketingové účely.</p>
+      <p><strong class="text-ink">Jaké údaje:</strong> jméno, kontaktní a&nbsp;doručovací údaje, údaje o&nbsp;objednávce a&nbsp;<strong class="text-ink">fotografie</strong>, které nahrajete pro zhotovení obrazu.</p>
+      <p><strong class="text-ink">Účel:</strong> vyřízení, výroba a&nbsp;doručení objednávky, zpracování platby a&nbsp;související komunikace. Právním základem je plnění smlouvy.</p>
+      <p><strong class="text-ink">Zpracovatelé:</strong> platby — Comgate, a.s.; hosting a&nbsp;databáze objednávek a&nbsp;úložiště fotografií — Vercel Inc.; rozesílání potvrzovacích e-mailů — Resend. Údaje nepředáváme nikomu pro marketingové účely.</p>
+      <p><strong class="text-ink">Doba uchování:</strong> po dobu plnění zakázky a&nbsp;dále po zákonem nezbytnou dobu (účetní a&nbsp;daňové doklady), nejdéle 10&nbsp;let. Nahrané fotografie uchováváme jen po&nbsp;dobu nutnou pro výrobu a&nbsp;reklamační lhůtu.</p>
+      <p><strong class="text-ink">Vaše práva:</strong> přístup k&nbsp;údajům, oprava, výmaz, omezení zpracování, námitka a&nbsp;přenositelnost. Uplatníte je e-mailem na&nbsp;das1979@seznam.cz.</p>
+      <p class="text-[.9rem] italic">Toto je pracovní znění; před ostrým spuštěním e-shopu jej nechte zkontrolovat a&nbsp;doplňte konkrétní zpracovatele dle skutečného nastavení.</p>
     </div>
   </div>
 </div>
@@ -759,6 +979,22 @@
       photoName: '',
       photoError: '',
       dragOver: false,
+      uploading: false,
+      photoBlobKey: '',
+      photoBlobUrl: '',
+
+      retouch: false,
+
+      pricing: null,
+      cart: [],
+      cartOpen: false,
+      checkoutStep: 'cart',
+      checkout: { name:'', email:'', phone:'', shipping:'pickup',
+                  street:'', city:'', zip:'', consent:false },
+      submitting: false,
+      checkoutError: '',
+      orderResult: null,
+      addedFlash: false,
 
       orient: 'sirka',
       sizeIndex: 0,
@@ -820,16 +1056,54 @@
           return;
         }
         const reader = new FileReader();
-        reader.onload = (e) => { this.photoSrc = e.target.result; this.photoName = file.name; };
+        reader.onload = (e) => {
+          this.photoSrc = e.target.result;
+          this.photoName = file.name;
+          this.uploadPhoto(file);
+        };
         reader.onerror = () => { this.photoError = 'Fotografii se nepodařilo načíst, zkuste to prosím znovu.'; };
         reader.readAsDataURL(file);
+      },
+      async uploadPhoto(file) {
+        this.uploading = true;
+        this.photoBlobKey = '';
+        this.photoBlobUrl = '';
+        this.photoError = '';
+        try {
+          const fd = new FormData();
+          fd.append('photo', file, file.name);
+          const res = await fetch('/api/upload', { method: 'POST', body: fd });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            throw new Error(data.error || 'Fotografii se nepodařilo nahrát.');
+          }
+          this.photoBlobKey = data.blobKey;
+          this.photoBlobUrl = data.blobUrl;
+          if (data.photoName) this.photoName = data.photoName;
+        } catch (err) {
+          // Keep the local preview so the canvas demo still works even when
+          // the upload backend isn't configured yet; the cart just stays
+          // inactive (gated on photoBlobKey).
+          this.photoBlobKey = '';
+          this.photoBlobUrl = '';
+          console.warn('Upload nedostupný:', err && err.message);
+        } finally {
+          this.uploading = false;
+        }
       },
       onFile(e) { this.readFile(e.target.files && e.target.files[0]); },
       onDrop(e) {
         this.dragOver = false;
         this.readFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
       },
-      clearPhoto() { this.photoSrc = ''; this.photoName = ''; this.photoError = ''; },
+      clearPhoto() {
+        this.photoSrc = '';
+        this.photoName = '';
+        this.photoError = '';
+        this.photoBlobKey = '';
+        this.photoBlobUrl = '';
+        this.uploading = false;
+      },
 
       prefill() {
         const tvar = this.orients.find(o => o.id === this.orient).label.toLowerCase();
@@ -858,10 +1132,216 @@
           '&body=' + encodeURIComponent(body);
       },
 
+      /* ---------- ceník / košík ---------- */
+
+      formatPrice(minor) {
+        const kc = Math.round((minor || 0) / 100);
+        return kc.toLocaleString('cs-CZ') + ' Kč';
+      },
+
+      priceForItem(item) {
+        const p = this.pricing;
+        if (!p) return null;
+        const type = p.print_types && p.print_types[item.print_type];
+        if (!type) return null;
+        const base = type.sizes && type.sizes[item.width_cm + 'x' + item.height_cm];
+        if (typeof base !== 'number') return null;
+        const ret = item.retouch ? (p.retouch && p.retouch.price || 0) : 0;
+        return base + ret;
+      },
+
+      get configUnitPrice() {
+        if (!this.pricing) return null;
+        return this.priceForItem({
+          print_type: 'canvas',
+          width_cm: this.current[0],
+          height_cm: this.current[1],
+          retouch: this.retouch,
+        });
+      },
+      get configPriceLabel() {
+        const u = this.configUnitPrice;
+        return u != null ? this.formatPrice(u) : this.priceLabel;
+      },
+      get retouchPriceLabel() {
+        const r = this.pricing && this.pricing.retouch && this.pricing.retouch.price;
+        return r ? '+ ' + this.formatPrice(r) : '';
+      },
+
+      addToCart() {
+        if (!this.photoBlobKey || this.uploading) return;
+        this.cart.push({
+          uid: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+          print_type: 'canvas',
+          orientation: this.orient,
+          width_cm: this.current[0],
+          height_cm: this.current[1],
+          retouch: this.retouch,
+          quantity: 1,
+          blobKey: this.photoBlobKey,
+          blobUrl: this.photoBlobUrl,
+          photoName: this.photoName,
+        });
+        this.addedFlash = true;
+        setTimeout(() => { this.addedFlash = false; }, 1800);
+        this.openCart();
+      },
+      removeFromCart(uid) {
+        this.cart = this.cart.filter(i => i.uid !== uid);
+      },
+      changeQty(uid, delta) {
+        const it = this.cart.find(i => i.uid === uid);
+        if (!it) return;
+        it.quantity = Math.max(1, Math.min(99, it.quantity + delta));
+      },
+      lineTotal(item) {
+        const u = this.priceForItem(item);
+        return u != null ? u * item.quantity : 0;
+      },
+
+      get cartCount() {
+        return this.cart.reduce((n, i) => n + i.quantity, 0);
+      },
+      get cartItemsTotal() {
+        return this.cart.reduce((s, i) => s + this.lineTotal(i), 0);
+      },
+      get shippingOptions() {
+        const sh = this.pricing && this.pricing.shipping;
+        return sh ? Object.keys(sh).map(k => ({ id:k, label:sh[k].label, price:sh[k].price })) : [];
+      },
+      get cartShippingTotal() {
+        const sh = this.pricing && this.pricing.shipping && this.pricing.shipping[this.checkout.shipping];
+        if (!sh) return 0;
+        const thr = this.pricing.free_shipping_threshold;
+        if (typeof thr === 'number' && this.cartItemsTotal >= thr) return 0;
+        return sh.price;
+      },
+      get cartGrandTotal() {
+        return this.cartItemsTotal + this.cartShippingTotal;
+      },
+      get needsAddress() {
+        return this.checkout.shipping !== 'pickup';
+      },
+
+      openCart() { this.checkoutStep = 'cart'; this.cartOpen = true; },
+      closeCart() { this.cartOpen = false; },
+      goCheckout() {
+        if (!this.cart.length) return;
+        this.checkoutError = '';
+        this.checkoutStep = 'details';
+      },
+      backToCart() { this.checkoutStep = 'cart'; },
+
+      async submitOrder() {
+        this.checkoutError = '';
+        const c = this.checkout;
+        if (!c.name.trim() || !c.email.trim() || !c.phone.trim()) {
+          this.checkoutError = 'Vyplňte prosím jméno, e-mail a telefon.'; return;
+        }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email)) {
+          this.checkoutError = 'Zadejte prosím platný e-mail.'; return;
+        }
+        if (this.needsAddress && (!c.street.trim() || !c.city.trim() || !c.zip.trim())) {
+          this.checkoutError = 'Vyplňte prosím doručovací adresu.'; return;
+        }
+        if (!c.consent) {
+          this.checkoutError = 'Pro dokončení potvrďte souhlas s podmínkami.'; return;
+        }
+        this.submitting = true;
+        try {
+          let key = sessionStorage.getItem('fobpro_idem');
+          if (!key) {
+            key = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+            sessionStorage.setItem('fobpro_idem', key);
+          }
+          const res = await fetch('/api/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              idempotencyKey: key,
+              items: this.cart.map(i => ({
+                print_type: i.print_type, orientation: i.orientation,
+                width_cm: i.width_cm, height_cm: i.height_cm,
+                retouch: i.retouch, quantity: i.quantity,
+                blobKey: i.blobKey, blobUrl: i.blobUrl, photoName: i.photoName,
+              })),
+              customer: { name: c.name.trim(), email: c.email.trim(), phone: c.phone.trim() },
+              shipping: c.shipping,
+              address: this.needsAddress ? { street:c.street.trim(), city:c.city.trim(), zip:c.zip.trim() } : null,
+              consent: !!c.consent,
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.redirect) {
+            throw new Error(data.error || 'Objednávku se nepodařilo vytvořit. Zkuste to prosím znovu.');
+          }
+          window.location.href = data.redirect;
+        } catch (err) {
+          this.checkoutError = err.message || 'Objednávku se nepodařilo vytvořit.';
+          this.submitting = false;
+        }
+      },
+
+      async loadPricing() {
+        try {
+          const res = await fetch('/pricing.json', { cache: 'no-store' });
+          if (res.ok) this.pricing = await res.json();
+        } catch { /* keep fallback labels */ }
+      },
+      restoreCart() {
+        try {
+          const raw = localStorage.getItem('fobpro_cart_v1');
+          if (raw) {
+            const arr = JSON.parse(raw);
+            if (Array.isArray(arr)) this.cart = arr;
+          }
+        } catch { /* ignore */ }
+      },
+      persistCart() {
+        try { localStorage.setItem('fobpro_cart_v1', JSON.stringify(this.cart)); }
+        catch { /* ignore */ }
+      },
+
+      async handleOrderReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('order');
+        if (!ref) return;
+        const hash = window.location.hash;
+        let view = hash === '#platba-neuspesna' ? 'failed'
+                 : hash === '#platba-ceka' ? 'pending' : 'paid';
+        try {
+          const res = await fetch('/api/order-status?ref=' + encodeURIComponent(ref), { cache: 'no-store' });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.status) {
+            view = data.status === 'paid' ? 'paid'
+                 : data.status === 'payment_pending' ? 'pending' : 'failed';
+            this.orderResult = { ref, view, total: data.grand_total, currency: data.currency };
+          } else {
+            this.orderResult = { ref, view };
+          }
+        } catch {
+          this.orderResult = { ref, view };
+        }
+        if (this.orderResult.view === 'paid') {
+          this.cart = [];
+          sessionStorage.removeItem('fobpro_idem');
+        }
+        const url = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', url);
+      },
+      closeOrderResult() {
+        this.orderResult = null;
+      },
+
       init() {
         const onScroll = () => { this.scrolled = window.scrollY > 24; };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
+
+        this.restoreCart();
+        this.$watch('cart', () => this.persistCart());
+        this.loadPricing();
+        this.handleOrderReturn();
 
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const els = document.querySelectorAll('.reveal');

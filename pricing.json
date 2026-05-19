@@ -1,0 +1,52 @@
+{
+  "_README": "Vsechny ceny jsou v HALIRICH (Kc x 100). Napr. 14900 = 149 Kc. Toto jsou PLACEHOLDER ceny pro testovani - pred ostrym provozem nahradte realnymi cisly a nastavte placeholder=false.",
+  "placeholder": true,
+  "version": "2026-05-01",
+  "currency": "CZK",
+  "print_types": {
+    "canvas": {
+      "label": "Fotoobraz na plátně",
+      "sizes": {
+        "30x20": 14900,
+        "40x30": 24900,
+        "45x30": 27900,
+        "60x40": 39900,
+        "60x45": 42900,
+        "75x50": 59900,
+        "80x60": 74900,
+        "90x60": 84900,
+        "100x75": 109900,
+        "120x80": 139900,
+        "125x70": 134900,
+        "20x30": 14900,
+        "30x40": 24900,
+        "30x45": 27900,
+        "40x60": 39900,
+        "45x60": 42900,
+        "50x75": 59900,
+        "60x80": 74900,
+        "60x90": 84900,
+        "75x100": 109900,
+        "80x120": 139900,
+        "70x125": 134900,
+        "20x20": 12900,
+        "30x30": 19900,
+        "40x40": 29900,
+        "50x50": 44900,
+        "60x60": 64900,
+        "80x80": 99900,
+        "100x100": 149900
+      }
+    }
+  },
+  "retouch": {
+    "label": "Digitální retuš",
+    "price": 10000
+  },
+  "shipping": {
+    "pickup": { "label": "Osobní odběr — Tišnov", "price": 0 },
+    "cp_balik": { "label": "Česká pošta — Balík Do ruky", "price": 11900 },
+    "zasilkovna": { "label": "Zásilkovna", "price": 8900 }
+  },
+  "free_shipping_threshold": null
+}
